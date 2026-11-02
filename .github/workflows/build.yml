@@ -1,0 +1,22 @@
+name: build
+on: [push, workflow_dispatch]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - name: Unpack waypoints-mod.zip
+        run: |
+          unzip -q waypoints-mod.zip -d work
+          ls -R work | head -20
+      - run: cargo install --git https://github.com/Vasysik/horizon-android --branch android cargo-horizon-mod
+      - name: Build
+        working-directory: work/waypoints-mod
+        run: cargo horizon-mod build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: waypoints-hmod
+          path: work/waypoints-mod/target/horizon-mod/*.hmod
